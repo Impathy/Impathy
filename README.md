@@ -141,6 +141,17 @@ Tutors config path: tutors_config.json
 - `/profile` - View your tutor profile information
 - `/help` - Show available commands
 
+### Student Management Commands
+
+- `/add_student` - Add a new student record with parent name, student name, and lesson cost
+  - Supports arguments: `/add_student Parent Name Student Name Cost`
+  - Supports interactive mode: `/add_student` then follow prompts
+  - Prevents duplicate entries (case-insensitive)
+- `/list_students` - List all registered students with their lesson costs
+- `/delete_student` - Delete a student record
+  - Supports arguments: `/delete_student Parent Name Student Name`
+  - Supports interactive mode with confirmation: `/delete_student` then `/confirm` or `/cancel`
+
 ### Admin Commands
 
 - `/health` - Check bot status and configuration
@@ -177,6 +188,76 @@ The bot implements a conversation-based registration flow for new tutors:
 - Input validation for names and sheet IDs
 
 For detailed manual testing instructions, see [AUTH_HANDLERS_TEST.md](AUTH_HANDLERS_TEST.md).
+
+## Student Management
+
+The bot provides comprehensive student management features for registered tutors:
+
+### Adding Students
+
+Students are added using the `/add_student` command:
+
+```
+# Interactive mode (prompts for each field)
+/add_student
+
+# Direct mode (all at once)
+/add_student John Smith Emma 1500
+```
+
+**Features:**
+- Stores parent name, student name, and lesson cost
+- Prevents duplicate entries (same parent/student pair detected case-insensitively)
+- Automatic whitespace normalization
+- Confirmation with all details
+- Cancellable with `/cancel` during interactive mode
+
+### Listing Students
+
+View all your registered students:
+
+```
+/list_students
+```
+
+Returns a numbered list with format: `Parent Name → Student Name (Cost)`
+
+### Deleting Students
+
+Delete student records using `/delete_student`:
+
+```
+# Interactive mode (prompts for each field with confirmation)
+/delete_student
+
+# Direct mode (deletes immediately)
+/delete_student John Smith Emma
+```
+
+**Features:**
+- Case-insensitive matching
+- Confirmation step in interactive mode (requires `/confirm` or `/cancel`)
+- Clear feedback if student not found
+- Atomic operations ensure data consistency
+
+### Data Storage
+
+All student records are stored in the "Ученики" (Students) worksheet with three columns:
+- **Имя родителя** (Parent Name)
+- **Имя ученика** (Student Name)
+- **Стоимость урока** (Lesson Cost)
+
+The worksheet is automatically created during registration. All operations are case-insensitive for duplicate detection but preserve the original casing when stored.
+
+### Error Handling
+
+- **Not registered**: Use `/register` first to set up your sheet
+- **Duplicate student**: Same parent/student pair already exists
+- **Student not found**: No matching record to delete
+- **Sheet access issues**: Check sheet sharing with the service account
+- **Invalid input**: Follow the interactive prompts carefully
+
+For detailed usage examples and command reference, see [COMMANDS.md](COMMANDS.md).
 
 ## Development
 

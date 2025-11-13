@@ -13,6 +13,8 @@ class BotCommands(Enum):
     HEALTH = "health"
     START = "start"
     HELP = "help"
+    REGISTER = "register"
+    PROFILE = "profile"
 
 
 class SheetNames(Enum):

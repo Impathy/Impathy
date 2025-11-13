@@ -15,6 +15,9 @@ class BotCommands(Enum):
     HELP = "help"
     REGISTER = "register"
     PROFILE = "profile"
+    ADD_STUDENT = "add_student"
+    LIST_STUDENTS = "list_students"
+    DELETE_STUDENT = "delete_student"
 
 
 class SheetNames(Enum):
@@ -22,6 +25,7 @@ class SheetNames(Enum):
     TUTORS = "Tutors"
     SCHEDULE = "Schedule"
     ATTENDANCE = "Attendance"
+    STUDENTS = "Ученики"
 
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")

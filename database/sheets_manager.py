@@ -13,7 +13,7 @@ from .exceptions import (
     WorksheetNotFoundError,
     MalformedDataError,
 )
-from utils.models import Student, Lesson, Payment
+from utils.models import Student, Lesson, Payment, StudentRecord
 
 
 SCOPES = [
@@ -22,7 +22,7 @@ SCOPES = [
 ]
 
 WORKSHEET_HEADERS = {
-    "Ученики": ["Имя", "Telegram ID", "Email", "Телефон", "Заметки"],
+    "Ученики": ["Имя родителя", "Имя ученика", "Стоимость урока"],
     "Уроки": ["Студент", "Дата", "Время", "Продолжительность", "Тема", "Заметки"],
     "Платежи": ["Студент", "Сумма", "Дата", "Метод оплаты", "Заметки"],
     "История": ["Дата", "Событие", "Деталь"],
@@ -396,3 +396,117 @@ class SheetsManager:
 
         for col_idx, value in enumerate(row_data, start=1):
             worksheet.update_cell(payment.sheet_row, col_idx, value)
+
+    def get_student_records(self, sheet_id: str) -> List[StudentRecord]:
+        """Get all student records from the Ученики worksheet.
+
+        Args:
+            sheet_id: Google Sheets ID.
+
+        Returns:
+            List of StudentRecord objects.
+
+        Raises:
+            SheetNotFoundError: If spreadsheet cannot be opened.
+            WorksheetNotFoundError: If Ученики worksheet is not found.
+            MalformedDataError: If student data is invalid.
+        """
+        spreadsheet = self.open_spreadsheet(sheet_id)
+        worksheet = self.ensure_worksheet_exists(spreadsheet, "Ученики")
+
+        records = []
+        rows = worksheet.get_all_values()
+
+        for idx, row in enumerate(rows[1:], start=2):
+            if not row or not row[0]:
+                continue
+            try:
+                record = StudentRecord.from_row(row, sheet_row=idx)
+                records.append(record)
+            except (IndexError, ValueError) as e:
+                raise MalformedDataError(
+                    f"Invalid student record at row {idx}: {str(e)}"
+                )
+
+        return records
+
+    def add_student_record(
+        self, sheet_id: str, parent_name: str, student_name: str, lesson_cost: str
+    ) -> StudentRecord:
+        """Add a new student record, checking for duplicates (case-insensitive).
+
+        Args:
+            sheet_id: Google Sheets ID.
+            parent_name: Parent name.
+            student_name: Student name.
+            lesson_cost: Lesson cost.
+
+        Returns:
+            The added StudentRecord.
+
+        Raises:
+            SheetNotFoundError: If spreadsheet cannot be opened.
+            WorksheetNotFoundError: If Ученики worksheet is not found.
+            ValueError: If student record already exists (same parent/student pair).
+        """
+        # Get existing records to check for duplicates
+        existing_records = self.get_student_records(sheet_id)
+        parent_lower = parent_name.lower().strip()
+        student_lower = student_name.lower().strip()
+
+        for record in existing_records:
+            if (
+                record.parent_name.lower().strip() == parent_lower
+                and record.student_name.lower().strip() == student_lower
+            ):
+                raise ValueError(
+                    f"Student record already exists: {parent_name} - {student_name}"
+                )
+
+        # Add the new record
+        spreadsheet = self.open_spreadsheet(sheet_id)
+        worksheet = self.ensure_worksheet_exists(spreadsheet, "Ученики")
+
+        student_record = StudentRecord(
+            parent_name=parent_name,
+            student_name=student_name,
+            lesson_cost=lesson_cost,
+        )
+
+        worksheet.append_row(student_record.to_row())
+
+        return student_record
+
+    def delete_student_record(self, sheet_id: str, parent_name: str, student_name: str) -> bool:
+        """Delete a student record by parent/student name pair (case-insensitive).
+
+        Args:
+            sheet_id: Google Sheets ID.
+            parent_name: Parent name to match.
+            student_name: Student name to match.
+
+        Returns:
+            True if a record was deleted, False if not found.
+
+        Raises:
+            SheetNotFoundError: If spreadsheet cannot be opened.
+            WorksheetNotFoundError: If Ученики worksheet is not found.
+        """
+        spreadsheet = self.open_spreadsheet(sheet_id)
+        worksheet = self.ensure_worksheet_exists(spreadsheet, "Ученики")
+
+        rows = worksheet.get_all_values()
+        parent_lower = parent_name.lower().strip()
+        student_lower = student_name.lower().strip()
+
+        for idx, row in enumerate(rows[1:], start=2):
+            if not row or len(row) < 2:
+                continue
+            if (
+                row[0].lower().strip() == parent_lower
+                and row[1].lower().strip() == student_lower
+            ):
+                worksheet.delete_rows(idx)
+                return True
+
+        return False

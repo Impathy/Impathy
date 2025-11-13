@@ -6,6 +6,7 @@ import config
 from database.tutors_db import TutorsDB
 from database.sheets_manager import SheetsManager
 from handlers.auth import setup_auth_handlers
+from handlers.students import setup_student_handlers
 
 
 logging.basicConfig(
@@ -45,6 +46,9 @@ def main():
     
     # Set up auth handlers (start, register, profile, help)
     setup_auth_handlers(application, tutors_db, sheets_manager)
+    
+    # Set up student handlers (add, list, delete)
+    setup_student_handlers(application, tutors_db, sheets_manager)
     
     logger.info("Bot initialized successfully. Starting polling...")
     application.run_polling(allowed_updates=Update.ALL_TYPES)

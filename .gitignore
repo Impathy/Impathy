@@ -1,3 +1,15 @@
+# Environment variables
+.env
+
+# Credentials and configuration files
+credentials.json
+tutors_config.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -27,6 +39,13 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
 # PyInstaller
 *.manifest
 *.spec
@@ -129,6 +148,12 @@ dmypy.json
 *.swo
 *~
 
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
 # Project-specific
 credentials.json
 tutors_config.json

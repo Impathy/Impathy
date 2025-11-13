@@ -134,9 +134,49 @@ Tutors config path: tutors_config.json
 
 ## Available Commands
 
+### User Commands
+
+- `/start` - Start the bot (shows different menus for registered and new users)
+- `/register` - Register as a new tutor (conversation handler)
+- `/profile` - View your tutor profile information
+- `/help` - Show available commands
+
+### Admin Commands
+
 - `/health` - Check bot status and configuration
 
-More commands will be added as the project develops.
+## Authentication & Registration
+
+The bot implements a conversation-based registration flow for new tutors:
+
+1. **`/start`** - Shows a welcome message:
+   - For new users: Offers to register or view help
+   - For registered users: Shows options for profile and help
+
+2. **`/register`** - Guides users through registration:
+   - Collects tutor name (validated for proper format)
+   - Requests Google Sheets URL or ID
+   - Validates sheet access and permissions
+   - Pre-creates required worksheets (Ученики, Уроки, Платежи, История, Настройки)
+   - Stores registration in `tutors_config.json`
+
+3. **`/profile`** - Displays:
+   - Registered tutor name
+   - Direct link to Google Sheet
+   - Registration date
+   - Last update date
+   - Shows error if user is not registered
+
+4. **`/help`** - Lists all available commands
+
+### Error Handling
+
+- Invalid sheet URLs are rejected with helpful error messages
+- Duplicate registrations are prevented with a friendly notification
+- Access errors to Google Sheets provide debugging guidance
+- Input validation for names and sheet IDs
+
+For detailed manual testing instructions, see [AUTH_HANDLERS_TEST.md](AUTH_HANDLERS_TEST.md).
 
 ## Development
 
